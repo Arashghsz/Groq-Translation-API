@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>French Translator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            min-height: 50px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇫🇷 French Translation Service using Groq API</h1>
+        <div>
+            <textarea id="input" rows="4" placeholder="Enter text to translate to French..."></textarea>
+            <button onclick="translateText()">Translate to French 🔄</button>
+        </div>
+        <div class="result" id="output"></div>
+    </div>
+
+    <script>
+        async function translateText() {
+            const outputDiv = document.getElementById('output');
+            const button = document.querySelector('button');
+            
+            try {
+                const text = document.getElementById('input').value;
+                if (!text.trim()) {
+                    outputDiv.innerHTML = '<span class="error">Please enter some text to translate</span>';
+                    return;
+                }
+
+                outputDiv.className = 'result loading';
+                outputDiv.textContent = 'Translating...';
+                button.disabled = true;
+
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({text: text})
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                outputDiv.className = 'result';
+                outputDiv.textContent = data.french || 'No translation received';
+            } catch (error) {
+                console.error('Translation error:', error);
+                outputDiv.className = 'result error';
+                outputDiv.textContent = `Translation failed: ${error.message}`;
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
